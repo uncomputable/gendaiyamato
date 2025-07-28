@@ -10,6 +10,7 @@ import {
 import {ColorModeToggle} from "./components/ColorModeToggle";
 import {SearchBar} from './components/SearchBar';
 import {SearchResults} from './components/SearchResults';
+import {WelcomeScreen} from './components/WelcomeScreen';
 
 export type DataEntry = {
   majiriWord: string;
@@ -82,9 +83,9 @@ export default function Page() {
   }, []);
 
   return (
-    <Box textAlign="center" fontSize="lg" p={5} maxW="600px" mx="auto">
+    <Box fontSize="lg" p={5} maxW="600px" mx="auto">
       <SearchBar database={database} setQuery={setQuery} setMatches={setMatches} />
-      { query && <SearchResults query={query} matches={matches} /> }
+      { query ? <SearchResults query={query} matches={matches} /> : <WelcomeScreen /> }
 
       <Box pos="absolute" top="4" right="4">
         <ClientOnly fallback={<Skeleton w="10" h="10" rounded="md" />}>
