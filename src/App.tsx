@@ -1,3 +1,4 @@
+import React, {useState, useEffect } from 'react';
 import {
   Box,
   HStack,
@@ -7,7 +8,8 @@ import {
   Skeleton,
 } from "@chakra-ui/react"
 import {ColorModeToggle} from "./components/ColorModeToggle";
-import {SearchEntries} from './components/SearchEntries';
+import {SearchBar} from './components/SearchBar';
+import {SearchResults} from './components/SearchResults';
 
 export type DataEntry = {
   majiriWord: string;
@@ -16,10 +18,73 @@ export type DataEntry = {
   tags: string[];
 };
 
+const DATABASE_URL = 'https://gist.githubusercontent.com/uncomputable/b26b059d5c15adc314e8f27ba2c307de/raw/1723f8df1591a9135aaa0c7b7d75c9e787985ee9/erabi.json';
+
+async function sha256(message: string): Promise<string> {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); 
+    return hashHex;
+}
+
+async function fetchDatabase(): Promise<DataEntry[]> {
+  const storedJson = localStorage.getItem('databaseJson');
+  const storedUrl = localStorage.getItem('databaseUrl');
+  const storedHash = localStorage.getItem('databaseHash');
+
+  if (storedJson != null && storedUrl === DATABASE_URL && storedHash != null) {
+    const storedJsonHash = await sha256(storedJson);
+    if (storedJsonHash != storedHash) {
+      // Hash invalid, need to re-download
+    }
+
+    try {
+      const database = JSON.parse(storedJson);
+      return database;
+    } catch (error) {
+      // JSON invalid, need to re-download
+    }
+  }
+
+  try {
+    const response = await fetch(DATABASE_URL);
+
+    if (!response.ok) {
+      console.error('Error fetching JSON database: HTTP status ', response.status);
+      return [];
+    }
+
+    const fetchedDatabase = await response.json();
+    const fetchedDatabaseJson = JSON.stringify(fetchedDatabase);
+    const fetchedDatabaseHash = await sha256(fetchedDatabaseJson);
+
+    localStorage.setItem('databaseJson', fetchedDatabaseJson);
+    localStorage.setItem('databaseUrl', DATABASE_URL);
+    localStorage.setItem('databaseHash', fetchedDatabaseHash);
+
+    return fetchedDatabase;
+  } catch (error) {
+    console.error('Error fetching JSON from database: ', error);
+    return [];
+  }
+}
+
 export default function Page() {
+  const [database, setDatabase] = useState<DataEntry[]>([]);
+  const [query, setQuery] = useState('');
+  const [matches, setMatches] = useState<DataEntry[]>([]);
+
+  useEffect(() => {
+    fetchDatabase().then(x => {
+      setDatabase(x);
+    });
+  }, []);
+
   return (
-    <Box textAlign="center" fontSize="lg">
-      <SearchEntries />
+    <Box textAlign="center" fontSize="lg" p={5} maxW="600px" mx="auto">
+      <SearchBar database={database} setQuery={setQuery} setMatches={setMatches} />
+      { query && <SearchResults query={query} matches={matches} /> }
 
       <Box pos="absolute" top="4" right="4">
         <ClientOnly fallback={<Skeleton w="10" h="10" rounded="md" />}>

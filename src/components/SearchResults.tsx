@@ -27,12 +27,12 @@ function highlightMatch(text: string, query: string) {
     )
 }
 
-interface MatchedEntriesProps {
+interface SearchResultsProps {
   query: string;
   matches: DataEntry[];
 }
 
-export function MatchedEntries({ query, matches }: MatchedEntriesProps) {
+export function SearchResults({ query, matches }: SearchResultsProps) {
   return (
     <VStack align="start">
       {matches.map((item, index) => (
