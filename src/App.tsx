@@ -19,7 +19,7 @@ export type DataEntry = {
   tags: string[];
 };
 
-const DATABASE_URL = 'https://gist.githubusercontent.com/uncomputable/b26b059d5c15adc314e8f27ba2c307de/raw/1723f8df1591a9135aaa0c7b7d75c9e787985ee9/erabi.json';
+const DATABASE_URL = 'https://gist.githubusercontent.com/uncomputable/dc053f2645c711043d09e2a2c0dd2fea/raw/ddb03a007957e8cef322cf2025d3593262481cfb/wakan.json';
 
 async function sha256(message: string): Promise<string> {
     const msgBuffer = new TextEncoder().encode(message);
